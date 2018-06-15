@@ -1,7 +1,13 @@
-const byte analogPin = 1;  
-const byte jp = 4;
+const byte analogPinF = 1;  
+const byte analogPinB = 2;
+const byte jpF = 4;
+const byte jpB = 5;
+
 int positionVal,readVal,v=150;
-float derivative=0,proportional=0,err=0,kp=20,kd=12;
+float derivative=0,proportional=0,errF=0,errB=0,err=0,err_rot=0;
+
+int kp=20,kd=12;                          //PID constants
+
 #include <Sabertooth.h>
 #include <SPI.h>
 #include <Kangaroo.h>
@@ -35,47 +41,35 @@ int i=0;
   Serial.println("J2 started");
 
   Serial.begin(115200);
-pinMode(analogPin,INPUT);
-pinMode(jp,INPUT);
+pinMode(analogPinF,INPUT);
+pinMode(jpF,INPUT);
+pinMode(analogPinB,INPUT);
+pinMode(jpB,INPUT);
 
 }
 
-
-////// K1-top_left  K2-top_right  L1-bottom-left  L2-bottom_right  \\\\\\\
 
   void loop()
 {
 
-err_c(); // for finding the error //// deviation of line from the center of the center 
-Serial.println(err);
-/*
-//Straight(1000,err);
-//check(500);
+err_cF(); // for finding the error //// deviation of line from the center of the center 
+err_cB();
+
+err=errF+errB;
+err_rot = errF-errB;
+
+Straight(1000,err,err_rot);
+
   if (positionVal>20 and positionVal<55){
   Serial.println("Stage1");
-  
-  Straight(5000,err/2);}
+  Straight(2000,err/2,err_rot/2);}
   else if (positionVal <20 || positionVal>55 && positionVal<70){
   Serial.println("Stage2");
-  Straight(4000,err*6);}
+  Straight(1500,err*2,err_rot*2);}
   else if(positionVal>70){
-  Straight(2200,0);
+  Straight(0,0,0);
   Serial.println("Stage3");}
-
-}
-*/
-if (positionVal>30 and positionVal<55){
-  Serial.println("Forward");
-  Straight(5000,err/5);}
-  else if (positionVal <30){
-  Serial.println("LEFT");
-//  StraightL(4000,err*6);
-}
-  else if(positionVal>70){
-//  StraightR(0,0);
-  Serial.println("RIGHT");}
-}
-
+ }
 
 
           //// Assume motors are adjusted such that on giving +ve speed they move forward \\\\
@@ -90,13 +84,13 @@ void check(int Speed)
   
    }
 
-void Straight(int Speed, float err)
+void Straight(int Speed, float err , float err_rot)
 {
  i=Speed;
-  K1.s(i-err);
-  K2.s(i+err);
-  J1.s(i+err);
-  J2.s(i-err);
+  K1.s(i - err - err_rot);
+  K2.s(i + err + err_rot);
+  J1.s(i - err + err_rot);
+  J2.s(i + err - err_rot);
   
    }
 
@@ -135,12 +129,20 @@ void Straight(int Speed, float err)
  }
  */
  
- void err_c(){
-  float temp = ((float)analogRead(analogPin) / 921) * 70;  
+ void err_cF(){
+  float temp = ((float)analogRead(analogPinF) / 921) * 70;  
   derivative = (temp + (-35) - proportional);
     proportional = temp + (-35);  
-    err = (kp * proportional) + (kd * derivative);
-    readVal = analogRead(analogPin);     
+    errF = (kp * proportional) + (kd * derivative);
+    readVal = analogRead(analogPinF);     
     positionVal = ((float)readVal / 921) * 70;
     }
 
+     void err_cB(){
+  float temp = ((float)analogRead(analogPinB) / 921) * 70;  
+  derivative = (temp + (-35) - proportional);
+    proportional = temp + (-35);  
+    errB = (kp * proportional) + (kd * derivative);
+    readVal = analogRead(analogPinB);     
+    positionVal = ((float)readVal / 921) * 70;
+    }
