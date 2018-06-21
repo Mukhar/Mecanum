@@ -2,10 +2,10 @@ const byte analogPin = 1;
 const byte jp = 4;
 int positionVal, readVal, v = 150;
 float derivative = 0, proportional = 0, err = 0, kp = 20, kd = 12;
-#include < Sabertooth.h > 
-#include < SPI.h > 
-#include < Kangaroo.h > 
-#include < Encoder.h >
+#include <Sabertooth.h> 
+#include <SPI.h> 
+#include <Kangaroo.h> 
+#include <Encoder.h>
   KangarooSerial J(Serial3);
 
 KangarooChannel J1(J, '1'); // LEKT
@@ -44,7 +44,8 @@ void setup() {
 
 void loop() {
 
-  err_c(); // for finding the error //// deviation of line from the center of the center 
+  err_c(); // for finding the error //
+  // deviation of line from the center of the center 
   Serial.println(err);
   /*
   //Straight(1000,err);
@@ -72,7 +73,7 @@ void loop() {
     StraightL(i, err * 2);
   } 
   else if (positionVal > 55 && positionVal < 70) {
-    rampp(i);
+   rampp(i);
     StraightR(i, err * 2);
     Serial.println("RIGHT");
   } 
@@ -90,21 +91,11 @@ void loop() {
   
   
 }
-
-//// Assume motors are adjusted such that on giving +ve speed they move forward \\\\
-void rampp(int i) {
-  if (i < 3000)
-    {i = i + 50;}
+void rampp(int sp) {
+  if (sp < 3000)
+    {sp+= 50;}
+    i=sp;
 }
-void check(int Speed) {
-  i = Speed;
-  K1.s(i);
-  K2.s(-i);
-  J1.s(-i);
-  J2.s(i);
-
-}
-
 void StraightL(int Speed, float err) {
   i = Speed;
   K1.s(i - err);
@@ -115,10 +106,10 @@ void StraightL(int Speed, float err) {
 }
 void StraightR(int Speed, float err) {
   i = Speed;
-  K1.s(i + err);
-  K2.s(i - err);
-  J1.s(i + err);
-  J2.s(i - err);
+  K1.s(i - err);
+  K2.s(i + err);
+  J1.s(i - err);
+  J2.s(i + err);
 
 }
 void Straight(int Speed, float err) {
